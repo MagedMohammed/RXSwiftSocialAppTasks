@@ -7,11 +7,8 @@
 //
 
 import UIKit
-
-
-protocol  EditPostViewProtocol : ShowAlertProtocol {
-    func updateDone(data:Posts)
-}
+import RxSwift
+import RxCocoa
 
 class EditPostViewController: UIViewController {
     //    MARK:- Outlet
@@ -22,20 +19,19 @@ class EditPostViewController: UIViewController {
     //    MARK:- Properties
     var postData:Posts?
     var segueId = "editPost"
-    var presenter:EditPostPresenterProtocol!
+    private let viewModel = EditPostViewModel()
+    private let bag = DisposeBag()
     
     //    MARK:- ViewLifeCycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.presenter = EditPostPresenter(view: self)
         if let post = self.postData{
             self.setDataForEdit(data: post)
         }
-        // Do any additional setup after loading the view.
     }
     
     //    MARK:- Method
-    
+//    func bindWith
     func setDataForEdit(data:Posts){
         self.bodyTexetView.text = data.body ?? ""
         self.titleTextField.text = data.title ?? ""
@@ -47,17 +43,14 @@ class EditPostViewController: UIViewController {
         guard let body = bodyTexetView.text, !body.isEmpty else{return}
         let userId = self.postData?.userId ?? 1
         if self.postData != nil {
-            self.presenter.editPost(title: title, userId: userId, body: body)
+            self.viewModel.editPost(title: title, userId: userId, body: body)
         }else{
-             self.presenter.addPost(title: title, userId: userId, body: body)
+            self.viewModel.addPost(title: title, userId: userId, body: body)
         }
     }
 }
 
-extension EditPostViewController : EditPostViewProtocol{
-    func updateDone(data:Posts) {
-        performSegue(withIdentifier: segueId, sender: nil)
-    }
+extension EditPostViewController {
     
     func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -65,8 +58,4 @@ extension EditPostViewController : EditPostViewProtocol{
         alert.addAction(action)
         self.present(alert, animated: true, completion: nil)
     }
-    
-
-    
-    
 }

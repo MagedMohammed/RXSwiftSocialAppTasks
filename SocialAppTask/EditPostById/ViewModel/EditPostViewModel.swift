@@ -7,33 +7,31 @@
 //
 
 import Foundation
+import RxSwift
 
-protocol  EditPostPresenterProtocol{
-    func addPost(title:String, userId:Int, body:String)
-    func editPost(title:String, userId:Int, body:String)
-}
-
-class EditPostPresenter : EditPostPresenterProtocol {
-    var view : EditPostViewProtocol!
+class EditPostViewModel{
     
-    init(view:EditPostViewProtocol){
-        self.view = view
-    }
+    //    MARK:- Properties
+    let post = PublishSubject<Posts>()
+    let addPost = PublishSubject<Posts>()
     
     func addPost(title: String, userId: Int, body: String) {
-        
         let parameters = [
             "userId": userId,
             "title": title,
             "body": body
-            ] as [String : Any]
+        ] as [String : Any]
         
         Request.getData(routerCase: Router.edit(parameters)) { (data:Posts?, error) in
             if let data = data, error == nil {
-                self.view.showAlert(title: "Add Successed", message: "Your post \(title) add successfully")
-                self.view.updateDone(data: data)
+                self.addPost.onNext(data)
+            }else{
+                if let error = error{
+                    self.addPost.onError(error)
+                }
             }
         }
+        self.addPost.onCompleted()
     }
     
     func editPost(title: String, userId: Int, body: String) {
@@ -41,21 +39,18 @@ class EditPostPresenter : EditPostPresenterProtocol {
             "userId": userId,
             "title": title,
             "body": body
-            ] as [String : Any]
+        ] as [String : Any]
         
         Request.getData(routerCase: Router.edit(parameters)) { (data:Posts?, error) in
             if let data = data, error == nil {
-                self.view.showAlert(title: "Add Successed", message: "Your post \(title) add successfully")
-                self.view.updateDone(data: data)
+                self.post.onNext(data)
+            }else{
+                if let error = error{
+                    self.post.onError(error)
+                }
             }
         }
+        self.post.onCompleted()
     }
-    
-    
-  
-    
-    
-    
-    
 }
 
